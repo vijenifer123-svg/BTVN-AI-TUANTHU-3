@@ -10,7 +10,7 @@ import base64
 import json 
 
 # --- CẤU HÌNH GIAO DIỆN ---
-st.set_page_config(page_title="VQH BPF - Định giá xe máy", page_icon="🏍️", layout="wide")
+st.set_page_config(page_title="VQH 3I BPF - Định giá xe máy", page_icon="🏍️", layout="wide")
 
 # --- CUSTOM CSS ---
 st.markdown("""
@@ -70,7 +70,7 @@ if 'current_prediction' not in st.session_state: st.session_state.current_predic
 if 'show_all_history' not in st.session_state: st.session_state.show_all_history = False
 if 'auth_mode' not in st.session_state: st.session_state.auth_mode = 'login'
 
-# --- TÍNH NĂNG ĐỌC FILE LƯU TÀI KHOẢN (AUTO-LOAD USERS) ---
+# --- TÍNH NĂNG ĐỌC FILE LƯU TÀI KHOẢN ---
 if 'users' not in st.session_state:
     if os.path.exists("Backup_Users.json"):
         with open("Backup_Users.json", "r", encoding="utf-8") as f:
@@ -78,7 +78,7 @@ if 'users' not in st.session_state:
     else:
         st.session_state.users = {} 
 
-# --- TÍNH NĂNG ĐỌC FILE LƯU LỊCH SỬ (AUTO-LOAD HISTORY) ---
+# --- TÍNH NĂNG ĐỌC FILE LƯU LỊCH SỬ ---
 if 'history' not in st.session_state:
     backup_file = "Backup_Lich_su_VQH_BPF.csv"
     if os.path.exists(backup_file):
@@ -106,13 +106,16 @@ def get_logo_html(height="55px"):
         with open(logo_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
         return f"<img src='data:image/jpeg;base64,{encoded_string}' style='height: {height}; object-fit: contain; mix-blend-mode: multiply;'>"
-    return "<h1 style='color: #FF5722; margin: 0; font-weight: 900; font-size: 32px;'>VQH BPF</h1>"
+    return ""
 
 def render_navbar():
-    logo_html = get_logo_html(height="50px")
+    logo_html = get_logo_html(height="45px")
     st.markdown(f"""
         <div class="top-navbar">
-            <div>{logo_html}</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div>{logo_html}</div>
+                <h2 style="color: #FF5722; margin: 0; font-weight: 900; font-size: 28px;">VQH 3I BPF</h2>
+            </div>
             <div style="color: #666; font-weight: 500; font-size: 16px;">Hệ thống định giá xe thông minh</div>
         </div>
     """, unsafe_allow_html=True)
@@ -180,65 +183,57 @@ if data_loaded:
     # ==========================================
     if st.session_state.page == 'auth':
         render_navbar() 
-        col_form, col_image = st.columns([1, 1.2])
+        
+        col_form, col_space, col_image = st.columns([1.3, 0.2, 1.8])
         
         with col_form:
-            st.write("<br>", unsafe_allow_html=True)
-            st.markdown(get_logo_html(height="90px"), unsafe_allow_html=True)
+            st.write("<br><br>", unsafe_allow_html=True)
+            
+            logo_html = get_logo_html(height="65px")
+            st.markdown(f"""
+                <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 5px;'>
+                    <div>{logo_html}</div>
+                    <h1 style='color:#FF5722; font-weight:900; margin:0; font-size: 38px;'>VQH 3I BPF</h1>
+                </div>
+            """, unsafe_allow_html=True)
             
             if st.session_state.auth_mode == 'login':
-                st.markdown("<h3 style='color:#333; margin-top: 15px;'>Đăng nhập</h3>", unsafe_allow_html=True)
-                st.write("Chào mừng bạn trở lại hệ sinh thái định giá xe.")
-                st.write("<br>", unsafe_allow_html=True)
+                # ====== FORM ĐĂNG NHẬP (ĐÃ GỌT DŨA GỌN GÀNG) ======
+                st.markdown("<h3 style='color:#333; margin-top: 10px; margin-bottom: 20px;'>Đăng nhập</h3>", unsafe_allow_html=True)
                 
-                saved_users = list(st.session_state.users.keys())
-                
-                if len(saved_users) > 0:
-                    selected_account = st.selectbox("Tài khoản đã lưu (Nhấp để chọn) *", ["-- Nhập tài khoản mới --"] + saved_users)
-                    if selected_account != "-- Nhập tài khoản mới --":
-                        email_input = selected_account
-                        pass_input = st.session_state.users[selected_account]
-                        st.text_input("Mật khẩu *", value=pass_input, type="password", disabled=True)
-                    else:
-                        email_input = st.text_input("Nhập email hoặc số điện thoại *", key="login_email")
-                        pass_input = st.text_input("Nhập mật khẩu *", type="password", key="login_pass")
-                else:
-                    email_input = st.text_input("Nhập email hoặc số điện thoại *", key="login_email")
-                    pass_input = st.text_input("Nhập mật khẩu *", type="password", key="login_pass")
+                email_input = st.text_input("Nhập email hoặc số điện thoại *", key="login_email")
+                pass_input = st.text_input("Nhập mật khẩu *", type="password", key="login_pass")
                 
                 st.write("<br>", unsafe_allow_html=True)
-                if st.button("Đăng nhập", type="primary"):
+                if st.button("Đăng nhập", type="primary", use_container_width=True):
                     if email_input.strip() == "" or pass_input.strip() == "":
-                        st.error("⚠️ Vui lòng chọn hoặc nhập đầy đủ tài khoản và mật khẩu!")
+                        st.error("⚠️ Vui lòng nhập đầy đủ Email/SĐT và Mật khẩu!")
                     else:
+                        # Tự động lưu tài khoản vào hệ thống ngầm
                         if email_input not in st.session_state.users:
                             st.session_state.users[email_input] = pass_input
                             with open("Backup_Users.json", "w", encoding="utf-8") as f:
                                 json.dump(st.session_state.users, f)
-                                
                         change_page('dashboard')
                         st.rerun()
                 
                 st.write("<br>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: gray; margin-bottom: 5px;'>Chưa có tài khoản?</div>", unsafe_allow_html=True)
-                if st.button("Đăng ký ngay", type="secondary"):
+                if st.button("Đăng ký ngay", type="secondary", use_container_width=True):
                     st.session_state.auth_mode = 'register'
                     st.rerun()
 
             else:
-                st.markdown("<h3 style='color:#333; margin-top: 15px;'>Đăng ký tài khoản</h3>", unsafe_allow_html=True)
-                st.write("Tham gia ngay để trải nghiệm công nghệ AI định giá chuẩn xác.")
-                st.write("<br>", unsafe_allow_html=True)
+                # ====== FORM ĐĂNG KÝ (ĐÃ BỎ Ô HỌ VÀ TÊN) ======
+                st.markdown("<h3 style='color:#333; margin-top: 10px; margin-bottom: 20px;'>Đăng ký tài khoản</h3>", unsafe_allow_html=True)
                 
-                name_reg = st.text_input("Nhập họ và tên *")
-                phone_reg = st.text_input("Nhập số điện thoại hoặc Email *")
-                pass_reg = st.text_input("Nhập mật khẩu *", type="password")
-                
-                agree = st.checkbox("Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật của VQH BPF.")
+                phone_reg = st.text_input("Nhập email hoặc số điện thoại *", key="reg_email")
+                pass_reg = st.text_input("Nhập mật khẩu *", type="password", key="reg_pass")
+                agree = st.checkbox("Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật của VQH 3I BPF.")
                 
                 st.write("<br>", unsafe_allow_html=True)
-                if st.button("Đăng ký", type="primary"):
-                    if name_reg.strip() == "" or phone_reg.strip() == "" or pass_reg.strip() == "":
+                if st.button("Đăng ký", type="primary", use_container_width=True):
+                    if phone_reg.strip() == "" or pass_reg.strip() == "":
                         st.error("⚠️ Vui lòng điền đầy đủ các thông tin bắt buộc!")
                     elif not agree:
                         st.error("⚠️ Bạn cần đồng ý với Điều khoản sử dụng để tiếp tục.")
@@ -246,7 +241,6 @@ if data_loaded:
                         st.session_state.users[phone_reg] = pass_reg
                         with open("Backup_Users.json", "w", encoding="utf-8") as f:
                             json.dump(st.session_state.users, f)
-                            
                         st.success("✅ Đăng ký thành công! Hệ thống đang tự động đăng nhập...")
                         st.session_state.auth_mode = 'login' 
                         change_page('dashboard')
@@ -254,7 +248,7 @@ if data_loaded:
                         
                 st.write("<br>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: gray; margin-bottom: 5px;'>Đã có tài khoản?</div>", unsafe_allow_html=True)
-                if st.button("Quay lại Đăng nhập", type="secondary"):
+                if st.button("Quay lại Đăng nhập", type="secondary", use_container_width=True):
                     st.session_state.auth_mode = 'login'
                     st.rerun()
 
@@ -277,7 +271,7 @@ if data_loaded:
                 st.markdown("<h3 style='margin-bottom:0;'>Định giá xe máy cũ ⚡</h3>", unsafe_allow_html=True)
                 st.markdown("<p style='color:gray;'>Chọn hãng xe để bắt đầu ⬇️</p>", unsafe_allow_html=True)
             with header_col2:
-                if st.button("Tài khoản", type="secondary"):
+                if st.button("Tài khoản", type="secondary", use_container_width=True):
                     change_page('account')
                     st.rerun()
             
@@ -327,16 +321,16 @@ if data_loaded:
             if len(history_list) > display_limit:
                 st.write("<br>", unsafe_allow_html=True)
                 if not st.session_state.show_all_history:
-                    if st.button("Xem tất cả lịch sử", type="secondary"):
+                    if st.button("Xem tất cả lịch sử", type="secondary", use_container_width=True):
                         st.session_state.show_all_history = True
                         st.rerun()
                 else:
-                    if st.button("Thu gọn danh sách", type="secondary"):
+                    if st.button("Thu gọn danh sách", type="secondary", use_container_width=True):
                         st.session_state.show_all_history = False
                         st.rerun()
             
         with col_sidebar:
-            if st.button("Định giá ngay", type="primary"):
+            if st.button("Định giá ngay", type="primary", use_container_width=True):
                 st.session_state.selected_brand = 'Honda' 
                 change_page('predict')
                 st.rerun()
@@ -389,7 +383,7 @@ if data_loaded:
             dong_xe_list = dataset[dataset[col_hang]==h][col_dong].dropna().unique() if col_dong else []
             d = st.selectbox("2️⃣ Dòng xe", dong_xe_list)
             
-            km = st.number_input("3️⃣ Số KM đã chạy (Có thể nhập số chi tiết)", min_value=0, max_value=500000, value=15000, step=1)
+            km = st.number_input("3️⃣ Số KM đã chạy", min_value=0, max_value=500000, value=15000, step=1)
             n = st.number_input("4️⃣ Năm sản xuất", min_value=1990, max_value=2026, value=2021, step=1)
             tt = st.slider("5️⃣ Tình trạng xe (1 Tệ - 10 Hoàn hảo)", min_value=1.0, max_value=10.0, value=8.0, step=0.5)
             
@@ -400,7 +394,7 @@ if data_loaded:
             kv = st.selectbox("7️⃣ Khu vực", kv_options)
             
             st.write("<br>", unsafe_allow_html=True)
-            if st.button("🚀 Tiếp theo (Tính giá dự đoán)", type="primary"):
+            if st.button("🚀 Tiếp theo (Tính giá dự đoán)", type="primary", use_container_width=True):
                 input_dict = {}
                 if col_hang: input_dict[col_hang] = h
                 if col_dong: input_dict[col_dong] = d
@@ -420,7 +414,6 @@ if data_loaded:
                     "specs": f"{km:,.0f} km • {pt_status} PT • {kv}",
                     "price": f"{pred:,.0f} đ"
                 }
-                
                 st.session_state.history.insert(0, new_history_item)
                 
                 hist_df = pd.DataFrame(st.session_state.history)
@@ -475,14 +468,13 @@ if data_loaded:
             
             st.write("<br>", unsafe_allow_html=True)
             
-            # --- CẬP NHẬT: 2 nút nằm ngang ---
             btn_col1, btn_col2 = st.columns(2)
             with btn_col1:
-                if st.button("🔄 Định giá xe khác", type="secondary"):
+                if st.button("🔄 Định giá xe khác", type="secondary", use_container_width=True):
                     change_page('predict')
                     st.rerun()
             with btn_col2:
-                if st.button("🏠 Quay lại trang chủ", type="primary"):
+                if st.button("🏠 Quay lại trang chủ", type="primary", use_container_width=True):
                     change_page('dashboard')
                     st.rerun()
                 
@@ -509,7 +501,7 @@ if data_loaded:
             st.markdown("</div>", unsafe_allow_html=True)
 
     # ==========================================
-    # 4. TRANG TÀI KHOẢN (ĐĂNG XUẤT & XUẤT LỊCH SỬ)
+    # 4. TRANG TÀI KHOẢN (ĐĂNG XUẤT)
     # ==========================================
     elif st.session_state.page == 'account':
         render_navbar()
@@ -517,13 +509,13 @@ if data_loaded:
         with col2:
             st.write("<br><br><br>", unsafe_allow_html=True)
             
-            logo_path = "LOGO XE CŨ.jpg"
-            if os.path.exists(logo_path):
-                st.image(logo_path, use_container_width=True)
-            else:
-                st.warning(f"⚠️ Không tìm thấy file {logo_path}")
-                
-            st.write("<br><br>", unsafe_allow_html=True)
+            logo_html = get_logo_html(height="120px")
+            st.markdown(f"""
+                <div style='display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px;'>
+                    {logo_html}
+                    <h1 style='color:#FF5722; font-weight:900; margin:0; font-size: 45px;'>VQH 3I BPF</h1>
+                </div>
+            """, unsafe_allow_html=True)
             
             hist_df = pd.DataFrame(st.session_state.history)
             if not hist_df.empty:
@@ -537,7 +529,7 @@ if data_loaded:
                     use_container_width=True
                 )
             
-            if st.button("Đăng xuất", type="primary"):
+            if st.button("Đăng xuất", type="primary", use_container_width=True):
                 try:
                     hist_df.to_csv("Backup_Lich_su_VQH_BPF.csv", index=False, encoding='utf-8-sig')
                 except:
@@ -547,6 +539,6 @@ if data_loaded:
                 st.session_state.auth_mode = 'login' 
                 st.rerun()
             
-            if st.button("Quay lại trang chủ", type="secondary"):
+            if st.button("Quay lại trang chủ", type="secondary", use_container_width=True):
                 change_page('dashboard')
                 st.rerun()
